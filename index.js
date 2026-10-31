@@ -27,6 +27,10 @@ app.get('/', async(req, res) => {
   res.send({msg : "server connected sucssesfull"})
 })
 
+app.get('/books',async(req,res)=>{
+  const data = await bookscollection.find().toArray();
+  res.send(data);
+})
 app.post('/books',async(req,res)=>{
   const body = req.body;
   const result = await bookscollection.insertOne(body);

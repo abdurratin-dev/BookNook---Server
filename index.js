@@ -6,6 +6,7 @@ const app = express()
 const port = process.env.PORT || 5000;
 
 app.use(cors());
+app.use(express.json());
 
 const client = new MongoClient(process.env.MONGO_DB_URI);
 export async function connectToMongoDB() {
@@ -20,10 +21,16 @@ export async function connectToMongoDB() {
 
 const database = await connectToMongoDB();
 const db = database.db('assignment8');
-const collection = db.collection('products');
+const bookscollection = db.collection('books');
+
 app.get('/', async(req, res) => {
-    const data = await collection.find().toArray();
-  res.send(data)
+  res.send({msg : "server connected sucssesfull"})
+})
+
+app.post('/books',async(req,res)=>{
+  const body = req.body;
+  const result = await bookscollection.insertOne(body);
+  res.send(result);
 })
 
 app.listen(port, () => {

@@ -38,6 +38,12 @@ app.get('/books/:id',async(req,res)=>{
   res.send(data);
 })
 
+app.delete('/books/:id',async(req,res)=>{
+  const id = req.params.id;
+  const result = await bookscollection.deleteOne({_id: new ObjectId(id)});
+  res.send(result);
+})
+
 app.patch('/books/:id', async(req,res)=>{
   const id = req.params.id;
   const quary = {_id : new ObjectId(id)};

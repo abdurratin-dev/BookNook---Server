@@ -38,6 +38,19 @@ app.get('/books/:id',async(req,res)=>{
   res.send(data);
 })
 
+app.patch('/books/:id', async(req,res)=>{
+  const id = req.params.id;
+  const quary = {_id : new ObjectId(id)};
+  const body = req.body;
+  const update = {
+    $set:{
+      ...body
+    }
+  }
+  const result = await bookscollection.updateOne(quary,update)
+  res.send(result);
+});
+
 app.post('/books',async(req,res)=>{
   const body = req.body;
   const result = await bookscollection.insertOne(body);
@@ -52,6 +65,19 @@ app.get('/borrows',async(req,res)=>{
 app.post('/borrows',async(req,res)=>{
   const body = req.body;
   const result = await borrowscollection.insertOne(body);
+  res.send(result);
+});
+
+app.patch('/borrows/:id', async(req,res)=>{
+  const id = req.params.id;
+  const quary = {_id : new ObjectId(id)};
+  const body = req.body;
+  const update = {
+    $set:{
+      status: body.status,
+    }
+  }
+  const result = await borrowscollection.updateOne(quary,update)
   res.send(result);
 });
 

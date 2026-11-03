@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { MongoClient, ObjectId } from 'mongodb';
 import 'dotenv/config';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 const app = express()
 const port = process.env.PORT || 5000;
 
@@ -23,6 +24,24 @@ const database = await connectToMongoDB();
 const db = database.db('assignment8');
 const bookscollection = db.collection('books');
 const borrowscollection = db.collection('borrows');
+
+const vreifyAPI = async(req,res,next)=>{
+  const authHeader = req.headers.authorization;
+  if(!authHeader){
+    return res.status(401).send({msg : "unauthorized"})
+  }
+  const token = authHeader.split(" ")[1];
+  try {
+    const JWKS = createRemoteJWKSet(
+      new URL(`${process.env.FRONEND_URL}/api/auth/jwks`)
+    )
+    const {payload} = await jwtVerify(token, JWKS)
+    next()
+  } catch (error) {
+    console.error('Token validation failed:', error)
+    throw error
+  }
+}
 
 app.get('/', async(req, res) => {
   res.send({msg : "server connected sucssesfull"})
@@ -63,7 +82,7 @@ app.post('/books',async(req,res)=>{
   res.send(result);
 });
 
-app.get('/borrows',async(req,res)=>{
+app.get('/borrows',vreifyAPI,async(req,res)=>{
   const data = await borrowscollection.find().toArray();
   res.send(data);
 })
@@ -86,6 +105,13 @@ app.patch('/borrows/:id', async(req,res)=>{
   const result = await borrowscollection.updateOne(quary,update)
   res.send(result);
 });
+
+app.delete('/borrows/:id',async(req,res)=>{
+  const id = req.params.id;
+  const quary = {bookId : id};
+  const result = await borrowscollection.deleteOne(quary);
+  res.send(result);
+})
 
 app.listen(port, () => {
   console.log(`Server creat succsfull`)

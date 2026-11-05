@@ -38,8 +38,7 @@ const vreifyAPI = async(req,res,next)=>{
     const {payload} = await jwtVerify(token, JWKS)
     next()
   } catch (error) {
-    console.error('Token validation failed:', error)
-    throw error
+    res.status(401).send({msg : "unauthorized"})
   }
 }
 
@@ -57,13 +56,13 @@ app.get('/books/:id',async(req,res)=>{
   res.send(data);
 })
 
-app.delete('/books/:id',async(req,res)=>{
+app.delete('/books/:id',vreifyAPI,async(req,res)=>{
   const id = req.params.id;
   const result = await bookscollection.deleteOne({_id: new ObjectId(id)});
   res.send(result);
 })
 
-app.patch('/books/:id', async(req,res)=>{
+app.patch('/books/:id',vreifyAPI, async(req,res)=>{
   const id = req.params.id;
   const quary = {_id : new ObjectId(id)};
   const body = req.body;
@@ -76,7 +75,7 @@ app.patch('/books/:id', async(req,res)=>{
   res.send(result);
 });
 
-app.post('/books',async(req,res)=>{
+app.post('/books',vreifyAPI,async(req,res)=>{
   const body = req.body;
   const result = await bookscollection.insertOne(body);
   res.send(result);
@@ -87,13 +86,13 @@ app.get('/borrows',vreifyAPI,async(req,res)=>{
   res.send(data);
 })
 
-app.post('/borrows',async(req,res)=>{
+app.post('/borrows',vreifyAPI,async(req,res)=>{
   const body = req.body;
   const result = await borrowscollection.insertOne(body);
   res.send(result);
 });
 
-app.patch('/borrows/:id', async(req,res)=>{
+app.patch('/borrows/:id',vreifyAPI, async(req,res)=>{
   const id = req.params.id;
   const quary = {_id : new ObjectId(id)};
   const body = req.body;
@@ -106,7 +105,7 @@ app.patch('/borrows/:id', async(req,res)=>{
   res.send(result);
 });
 
-app.delete('/borrows/:id',async(req,res)=>{
+app.delete('/borrows/:id',vreifyAPI,async(req,res)=>{
   const id = req.params.id;
   const quary = {bookId : id};
   const result = await borrowscollection.deleteOne(quary);
